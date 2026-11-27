@@ -13,6 +13,11 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
+# The session-wide stub-table fixture needs a test database, and pytest-django
+# only builds one when a collected test asks for it. Without this mark, running
+# this module on its own errors in that fixture.
+pytestmark = pytest.mark.django_db
+
 
 @pytest.fixture(scope="module")
 def build_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
