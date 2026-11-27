@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+node_modules/
+dist/
+test-results/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+panel_framework/static/panel_framework/css/reference.css

@@ -1,0 +1,23 @@
+from django.apps import AppConfig
+
+
+class PanelFrameworkConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "panel_framework"
+    label = "panel_framework"
+    verbose_name = "Panel framework"
+
+    def ready(self) -> None:
+        from django.core.checks import register
+
+        from panel_framework.checks import (
+            check_icon_names,
+            check_panels,
+            check_site_resolver,
+            check_task_backend,
+        )
+
+        register(check_icon_names)
+        register(check_panels)
+        register(check_task_backend)
+        register(check_site_resolver)
