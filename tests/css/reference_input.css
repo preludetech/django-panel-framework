@@ -3,11 +3,11 @@
  * compiled with nothing from any host. */
 @import "tailwindcss" source(none);
 
-@import "../../css/reference_theme.css";
-@import "../../css/panel_framework.css";
-@import "../../css/minimal_shell.css";
+@import "../../panel_framework/css/reference_theme.css";
+@import "../../panel_framework/css/panel_framework.css";
+@import "../../panel_framework/css/minimal_shell.css";
 
-@source "../../templates";
+@source "../../panel_framework/templates";
 
 @layer base {
     [x-cloak] {

@@ -1,0 +1,11 @@
+{
+  "name": "django-panel-framework-dev",
+  "private": true,
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.16",
+    "tailwindcss": "^4.1.16"
+  },
+  "scripts": {
+    "panel_framework_css": "npx @tailwindcss/cli -i ./tests/css/reference_input.css -o ./panel_framework/static/panel_framework/css/reference.css"
+  }
+}

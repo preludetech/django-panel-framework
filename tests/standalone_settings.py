@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.sites",
     "django.contrib.messages",
+    "django.contrib.staticfiles",
     "django.contrib.admin",
     "django_cotton.apps.SimpleAppConfig",
     "panel_framework",
