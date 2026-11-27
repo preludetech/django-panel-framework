@@ -22,7 +22,6 @@ from dataclasses import dataclass
 from typing import ClassVar, cast
 
 from django import forms
-from django.apps import apps
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Field, Model, QuerySet
@@ -105,17 +104,20 @@ class RecordingCapabilityConfig(SectionConfigBase):
 
 
 def _stub_model() -> type[Model]:
-    return apps.get_model("panel_framework", "stubmodel")
+    from tests.stub_models import StubModel
+
+    return StubModel
 
 
 def _stub_entry_model() -> type[Model]:
-    return apps.get_model("panel_framework", "stubentry")
+    from tests.stub_models import StubEntry
+
+    return StubEntry
 
 
 @functools.cache
 def _stub_entry_form_class() -> type[forms.ModelForm]:
-    """Built on first use: the entry model resolves only after the test
-    tables are registered."""
+    """Built on first use, so importing this module does not import the stub models."""
 
     class _StubEntryForm(forms.ModelForm):
         class Meta:
@@ -126,7 +128,9 @@ def _stub_entry_form_class() -> type[forms.ModelForm]:
 
 
 def _stub_child_model() -> type[Model]:
-    return apps.get_model("panel_framework", "stubchild")
+    from tests.stub_models import StubChild
+
+    return StubChild
 
 
 def _build_stub_create_form(
