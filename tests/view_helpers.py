@@ -9,7 +9,6 @@ from panel_framework.views import NavGroup, panel_framework_view
 from tests.helpers import make_staff_user
 from tests.stub_panels import STUB_CONFIG
 
-TEMPLATE = "panel_framework/minimal_shell.html"
 URL_NAME = "panel_framework_test:framework"
 
 
@@ -53,7 +52,6 @@ def call_view(
         config=STUB_CONFIG if config is None else config,
         request=request,
         path_string=path_string,
-        template_name=TEMPLATE,
         url_name=url_name,
     )
 

@@ -15,25 +15,6 @@ from django.db import connections
 
 import panel_framework
 
-REFERENCE_CSS = (
-    Path(panel_framework.__file__).parent
-    / "static"
-    / "panel_framework"
-    / "css"
-    / "reference.css"
-)
-
-
-@pytest.fixture(autouse=True, scope="session")
-def _reference_css_is_built() -> None:
-    """The minimal shell links a compiled stylesheet that is not committed.
-
-    Without it every flow runs against an unstyled page and fails on layout,
-    far from the cause.
-    """
-    if not REFERENCE_CSS.exists():
-        pytest.fail("reference.css is missing: run `npm run panel_framework_css`")
-
 
 @pytest.fixture(scope="session")
 def playwright(playwright: Playwright) -> Iterator[Playwright]:

@@ -1,0 +1,13 @@
+{% load static %}
+{% comment %}
+htmx and the framework's Alpine components. Alpine itself is shell/alpine.html,
+which comes after this and after any component script of the host's: Alpine
+starts as soon as it loads, and an x-data name it meets before registration
+stays inert. The history cache is off because a restored page must come from
+the server, with the rows and permissions of now.
+{% endcomment %}
+<meta name="htmx-config"
+      content='{"historyCacheSize": 0, "historyRestoreAsHxRequest": false}' />
+<script src="{% static 'panel_framework/vendor/htmx.min.js' %}"></script>
+<script defer src="{% static 'panel_framework/js/shell-components.js' %}"></script>
+<script defer src="{% static 'panel_framework/js/alpine-components.js' %}"></script>

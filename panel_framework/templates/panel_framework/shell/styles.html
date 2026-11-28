@@ -1,0 +1,10 @@
+{% load static %}
+{% comment %}
+The framework's compiled stylesheet: its own rules, every utility its templates
+use, and the default colour roles as CSS variables on :root. A host changes a
+colour by setting --color-<role> in a stylesheet loaded after this one. A host
+that compiles the framework into its own Tailwind build links that instead.
+{% endcomment %}
+<link rel="stylesheet"
+      type="text/css"
+      href="{% static 'panel_framework/css/panel_framework.css' %}" />

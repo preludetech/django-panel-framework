@@ -1,113 +1,26 @@
-# Host contract
+# Customising
 
-What a project must provide before the panel framework renders correctly in it. Each system check
-that fails on a missing piece points at a section here. `templates/panel_framework/minimal_shell.html`
-is a working host shell, and the blocks below are taken from it.
+The framework works as installed. The default shell (`panel_framework/shell/base.html`) loads the
+framework's stylesheet and scripts and renders every region a panel page needs, and
+`panel_framework_view` uses it unless you name another template. Nothing on this page is required.
+Each section covers one thing you can change.
 
-## Shell ids
+## Colours
 
-The host's base template renders `#interface-main` around the page content. `quick_view_host` and
-`modal_host` are included outside it, so an overlay survives an htmx swap of `#main-content`. The
-framework JavaScript and the fragments address these elements by id.
+The compiled stylesheet declares each colour role as a CSS variable on `:root`. To change a colour,
+set the variable in a stylesheet loaded after the framework's:
 
-Every other id comes from a framework fragment. Do not reuse one in the host's markup:
-`#main-content`, `#instance-header`, `#sidebar-nav`, `#breadcrumbs`, `#page-title`, `#app-modal`,
-`#app-modal-body`, `#quick-view*`, `#scope-announcer`.
-
-The host's base template also renders four things the shell supplies:
-
-- Empty `#toast-region-polite` (`role="status"`, `aria-live="polite"`) and `#toast-region-assertive`
-  (`role="alert"`, `aria-live="assertive"`) elements. A response carries a toast as an out-of-band
-  fragment that appends to one of them.
-- A place where Django's `messages` render. A request without scripting shows its outcome there.
-- An htmx listener for `htmx:beforeSwap` (see [Scripts and order](#scripts-and-order)).
-- Base element styles for `table`, `th`, `td`, `h1` and `h2`. Framework templates style their own
-  markup with utilities and leave cell padding and colour, and heading size and weight, to the
-  page. The rules are in `css/minimal_shell.css`, under `@layer base`.
-
-## Fragments
-
-The host includes these from `panel_framework/partials/`:
-
-| Fragment | Where | Notes |
-| --- | --- | --- |
-| `modal_host.html` | outside `#interface-main` | the one `<dialog>` every action fragment loads into |
-| `quick_view_host.html` | outside `#interface-main` | the row quick-view drawer |
-| `announcer_host.html` | outside `#interface-main` | the `#scope-announcer` live region |
-| `sidebar_nav.html` | in the navigation panel | needs `menu_groups` and `request` |
-| `breadcrumbs.html` | top of `#interface-main` | a back link, or an empty `#breadcrumbs` |
-| `document_title.html#document-title` | inside the host's `<title>` | the one source of the title string |
-| `page_title.html` | below the breadcrumbs | needs `page_title`, optionally `page_subtitle` |
-
-The shell's own copy to start from:
-
-```django
-<title>{% include "panel_framework/partials/document_title.html#document-title" %}</title>
-...
-<div id="interface-main">
-    {% include "panel_framework/partials/breadcrumbs.html" %}
-    {% include "panel_framework/partials/page_title.html" %}
-    {% block content %}{% endblock content %}
-</div>
-{% include "panel_framework/partials/quick_view_host.html" %}
-{% include "panel_framework/partials/modal_host.html" %}
-{% include "panel_framework/partials/announcer_host.html" %}
+```css
+:root {
+    --color-primary: #7c3aed;
+    --color-sidepanel: #f5f3ff;
+}
 ```
 
-The navigation panel needs a `<dialog>` driven by `x-data="sidePanel"`. Copy it from
-`minimal_shell.html` and keep the `side-panel-dialog` class, which `shell-components.js` selects.
-
-## Context
-
-- `site_name` is optional. Without it the document title has no suffix and no trailing dash.
-- `request.panel_scope_name` is optional. A host whose interface is scoped sets it, and the title
-  names the scope. Without it the segment is dropped.
-- `request.panel_url_kwargs` is optional. A host whose panel URLs carry a scope kwarg (an
-  organisation slug, say) sets it to a dict of those kwargs, and the framework adds them whenever it
-  reverses a panel URL.
-
-## Scripts and order
-
-Each step names the failure it prevents.
-
-1. htmx 2.x, loaded globally. Without it no panel link, filter or action fragment works.
-2. `<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>`. Without it every htmx POST answers 403.
-3. An `htmx:beforeSwap` listener that swaps three kinds of response: any 422, a 403 or 404 whose body
-   contains `data-htmx-swap-error`, and any error status whose body carries an out-of-band toast
-   (`hx-swap-oob="beforeend:#toast-region-`). Without it a validation error, a vanished object or a
-   rejected role change never reaches the page, because htmx swaps no 4xx response by default. The
-   listener in `minimal_shell.html` is a complete copy.
-4. The host's own Alpine component scripts.
-5. `panel_framework/js/shell-components.js`, then `panel_framework/js/alpine-components.js`, both
-   `defer`red. Alpine starts the moment its script loads. A component it meets before registration is
-   an unregistered `x-data` name, and the element stays inert.
-6. The Alpine CSP build (`@alpinejs/csp` 3.x), last.
-
-## Tailwind
-
-Tailwind 4.1.16 or later. The framework's classes only exist in the host's stylesheet if the host's
-Tailwind build reads the framework's templates and stylesheet.
-
-1. Run `uv run manage.py write_panel_framework_css` before every Tailwind build. It writes
-   `tailwind.panel_framework.css` into `BASE_DIR`, holding a `@source` of the framework's templates and
-   an `@import` of `css/panel_framework.css`. The paths are machine-specific, so rerun it after
-   installing or upgrading the framework.
-2. In the input CSS, add `@import "./tailwind.panel_framework.css";` after `@import "tailwindcss"`
-   and the host's theme tokens, and before the host's theme overrides. A theme that reopens
-   `.panel-surface` wins only if it comes later.
-3. Commit neither `tailwind.panel_framework.css` nor the compiled output.
-4. Define `[x-cloak] { display: none !important; }`. The framework marks Alpine-only controls
-   `x-cloak` so they stay hidden until Alpine starts, and stay hidden with scripting off, where a
-   `<noscript>` fallback takes their place. The framework stylesheet leaves it to the host, which
-   needs the rule for its own Alpine markup too.
-
-## Tokens
-
-The framework's templates and stylesheet use these colour roles as utilities (`bg-primary`,
-`text-muted`, `border-border`) and read some as raw variables. The host defines every one of them under
-the same `--color-<role>` names. `css/reference_theme.css` is the source of truth, with neutral working
-values. A test keeps this block equal to that file. `on-*` is the foreground to put on the matching
-background.
+Load that stylesheet from the `head_extra` block of a template that extends
+`panel_framework/shell/base.html`. `on-*` is the foreground on the matching background. The hover
+roles and `focus-ring` follow the role they are mixed from unless you set them.
+`css/default_theme.css` holds the default values. A test keeps this block equal to that file.
 
 ```
 --color-primary
@@ -143,6 +56,115 @@ background.
 ```
 
 `--panel-table-head`, `--sidebar-top` and the `--modal-*` variables are internal to the framework.
+
+## Templates
+
+Django uses the first template it finds for a path: a `DIRS` entry beats every app, and apps resolve
+in `INSTALLED_APPS` order. To replace a framework template, add one at the same path in an app
+listed before `panel_framework`.
+
+The shell is built from small templates in `panel_framework/shell/`, so you override the piece you
+want to change:
+
+| Template | Holds |
+| --- | --- |
+| `base.html` | the whole document, with blocks `head_title`, `styles`, `scripts`, `alpine_components`, `head_extra`, `messages`, `navigation`, `content_header`, `content` and `overlays` |
+| `styles.html` | the link to the compiled stylesheet |
+| `scripts.html` | htmx, its configuration and the framework's Alpine components |
+| `alpine.html` | Alpine's CSP build |
+| `toasts.html` | the two toast regions and Django's `messages` |
+| `navigation.html` | the navigation `<dialog>` |
+| `sidebar.html` | what the navigation holds: by default, the menu alone |
+| `overlays.html` | the quick view, the modal dialog and the screen-reader announcer |
+
+Two common changes:
+
+- A logo above the menu: override `panel_framework/shell/sidebar.html`.
+- An Alpine component of your own: extend `base.html` and load its script in the
+  `alpine_components` block. Alpine's CSP build takes no inline expressions, so a component is
+  registered from a script, and that script loads before Alpine.
+
+Context the shell reads, all optional:
+
+- `site_name`, from a context processor of yours. The document title ends with it.
+- `request.panel_scope_name`. The document title names the scope.
+- `request.panel_url_kwargs`, a dict. The framework adds these kwargs whenever it reverses a panel
+  URL, for a host whose panel URLs carry one (an organisation slug, say).
+
+## Your own shell
+
+A project with its own base template passes it to the view:
+
+```python
+panel_framework_view(
+    config,
+    request,
+    path_string,
+    template_name="my_app/interface.html",
+    url_name="my_app:interface",
+)
+```
+
+That template includes the pieces in this order:
+
+```django
+<head>
+    <title>{% include "panel_framework/partials/document_title.html#document-title" %}</title>
+    {% include "panel_framework/shell/styles.html" %}
+    {% include "panel_framework/shell/scripts.html" %}
+    {# your own Alpine component scripts #}
+    {% include "panel_framework/shell/alpine.html" %}
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    {% include "panel_framework/shell/toasts.html" %}
+    <div x-data="sidePanel" data-storage-key="my-sidebar" data-desktop-lock="true">
+        <div class="side-panel-grid grid relative">
+            {% include "panel_framework/shell/navigation.html" %}
+            <main id="interface-main">
+                {% include "panel_framework/partials/breadcrumbs.html" %}
+                {% include "panel_framework/partials/page_title.html" %}
+                {% include main_template_name with main=main request=request csrf_token=csrf_token only %}
+            </main>
+        </div>
+        {% include "panel_framework/shell/overlays.html" %}
+    </div>
+</body>
+```
+
+What each part is for:
+
+- `hx-headers` on `<body>` sends the CSRF token with every htmx request. Without it every htmx POST
+  answers 403.
+- The `sidePanel` wrapper holds the navigation and the main region, because the menu toggle in each
+  page header belongs to it.
+- `#interface-main` holds the page. The overlays sit outside it, so an open dialog survives an htmx
+  swap of the page.
+- A project that already loads htmx 2.x and Alpine's CSP build leaves out `scripts.html` and
+  `alpine.html` and loads `panel_framework/js/shell-components.js`, then
+  `panel_framework/js/alpine-components.js`, before Alpine.
+
+The framework's scripts and fragments find these elements by id. Don't reuse one in your markup:
+`#interface-main`, `#main-content`, `#instance-header`, `#sidebar-nav`, `#breadcrumbs`,
+`#page-title`, `#app-modal`, `#app-modal-body`, `#quick-view*`, `#scope-announcer`,
+`#toast-region-polite`, `#toast-region-assertive`.
+
+## Your own Tailwind build
+
+A project that builds its own Tailwind stylesheet can compile the framework into it, in place of
+`shell/styles.html`. The framework's rules then use the project's theme tokens at build time.
+Tailwind 4.1.16 or later.
+
+1. Run `python manage.py write_panel_framework_css` before every Tailwind build. It writes
+   `tailwind.panel_framework.css` into `BASE_DIR`, holding a `@source` of the framework's templates
+   and an `@import` of `css/panel_framework.css`. The paths are machine-specific, so don't commit the
+   file, and rerun the command after installing or upgrading the framework.
+2. In the input CSS, add `@import "./tailwind.panel_framework.css";` after `@import "tailwindcss"`
+   and the theme tokens, and before any rule that reopens a framework class such as
+   `.panel-surface`.
+3. Define every role in [Colours](#colours) in the theme, under the same `--color-<role>` names.
+4. Supply base element styles for `table`, `th`, `td`, `h1` and `h2`. Framework templates leave
+   cell padding and colour, and heading size and weight, to the page. The default shell's rules are
+   in `css/shell.css`, under `@layer base`, with its navigation layout above them.
 
 ## Icons
 
@@ -183,7 +205,7 @@ user
 warning
 ```
 
-A host changes the icons by template path:
+You change the icons by template path:
 
 - To add an icon, add `panel_framework/icons/<name>.html` holding its paths. Names that host data
   supplies (a sidebar item's `icon`, an empty state's `icon`, a button's `icon_left`) belong to the
@@ -196,6 +218,7 @@ A host changes the icons by template path:
 `manage.py check` renders each name through `c-panel-icon`, the framework's or the host's override. A
 name that raises is error `panel_framework.E010`. A name that renders nothing is warning
 `panel_framework.W003`.
+
 
 ## Primitives
 
@@ -249,22 +272,9 @@ Notes that do not fit a row:
   `panel-datetime` format with Django's `date` filter (`j M Y`, and `H:i` for the time) in the current
   time zone.
 
+
 ## Reference page
 
-The DEBUG-only component reference page extends `panel_framework/reference/base.html`. The
-framework's copy extends `panel_framework/minimal_shell.html`. A host gives the page its own shell by
-overriding that template by path. The override wins by template
-precedence: `DIRS` before apps, then `INSTALLED_APPS` order.
-
-An override defines two blocks:
-
-- `head_title`, the page's `<title>` text.
-- `content`, where the reference page renders.
-
-It also loads `panel_framework/js/alpine-components.js` if it is not already part of the host's
-scripts. The reference page fills only these two blocks.
-
-The minimal shell exists for the DEBUG-only reference page and the framework's own tests. It links
-`panel_framework/css/reference.css`, a compiled file that is gitignored: build it with
-`npm run panel_framework_css`. A fresh checkout's `collectstatic` omits it, so a host never renders
-its own interface in the minimal shell. A host's shell links the host's own stylesheet.
+The DEBUG-only component reference page extends `panel_framework/reference/base.html`, which extends
+the default shell. To give the page your own shell, override that template by path. The override
+defines two blocks: `head_title`, the page's `<title>` text, and `content`, where the page renders.

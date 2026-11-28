@@ -11,11 +11,11 @@ import re
 from pathlib import Path
 
 PANEL_FRAMEWORK_DIR = Path(__file__).resolve().parents[2] / "panel_framework"
-REFERENCE_THEME = PANEL_FRAMEWORK_DIR / "css" / "reference_theme.css"
+REFERENCE_THEME = PANEL_FRAMEWORK_DIR / "css" / "default_theme.css"
 TEMPLATES_DIR = PANEL_FRAMEWORK_DIR / "templates"
 STYLESHEETS = (
     PANEL_FRAMEWORK_DIR / "css" / "panel_framework.css",
-    PANEL_FRAMEWORK_DIR / "css" / "minimal_shell.css",
+    PANEL_FRAMEWORK_DIR / "css" / "shell.css",
 )
 
 # A literal list, so a size or style utility such as `text-sm` or `border-2` is

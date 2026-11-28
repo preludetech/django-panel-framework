@@ -1,9 +1,27 @@
-/* Panel framework stylesheet. A host's Tailwind build imports it through the
- * generated `tailwind.panel_framework.css` (`manage.py write_panel_framework_css`),
- * so the `@apply` rules and the `@utility` blocks below pass through the host's
- * own Tailwind run and resolve against the host's theme tokens. */
+/* Panel framework stylesheet: the rules the framework's templates need beyond
+ * Tailwind utilities. It reaches a page one of two ways. `standalone.css`
+ * compiles it with the default theme into the stylesheet the default shell
+ * links. A host with its own Tailwind build imports it through the generated
+ * `tailwind.panel_framework.css` (`manage.py write_panel_framework_css`), so the
+ * `@apply` rules and `@utility` blocks resolve against the host's theme tokens. */
 
 @layer base {
+    /* Alpine-only controls stay hidden until Alpine starts, and stay hidden
+     * with scripting off, where a <noscript> fallback takes their place. */
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* The selection bar is server-rendered visible so it works without
+     * JavaScript. With scripting on it stays hidden until tableSelection takes
+     * over, which removes the attribute; x-show decides from then on.
+     * !important because the bar's own `flex` utility would otherwise win. */
+    @media (scripting: enabled) {
+        [data-selection-bar-pending] {
+            display: none !important;
+        }
+    }
+
     /* A select inside a panel surface draws its own chevron, inside the end
      * padding, so it sits clear of the edge whatever the browser would have
      * drawn. Two currentColor gradients make the arrow follow the text colour.

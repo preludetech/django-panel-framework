@@ -1,8 +1,8 @@
 /**
  * Alpine.js CSP-compatible component registrations for panel_framework.
  *
- * Load this script BEFORE the Alpine CSP script and AFTER the base
- * alpine-components.js script.
+ * Load this script AFTER shell-components.js and BEFORE the Alpine CSP
+ * script. `panel_framework/shell/scripts.html` loads all of them in order.
  */
 
 // The loading text of a form's submit buttons says what the request is
@@ -60,7 +60,8 @@ document.addEventListener("htmx:beforeRequest", (event) => {
 const REQUEST_ERROR_TOO_LARGE =
     "The file may be too large to upload. Choose a smaller file.";
 const REQUEST_ERROR_GENERIC = "Your changes could not be saved. Try again.";
-// The out-of-band toast fragment base/partials/messages.html renders.
+// How a response carries a toast: an out-of-band fragment that appends to
+// one of the shell's two toast regions (shell/toasts.html).
 const TOAST_MARKER = 'hx-swap-oob="beforeend:#toast-region-';
 
 // A panel form whose request failed with nothing to swap in says so inside
@@ -91,6 +92,29 @@ function showRequestError(event) {
 document.addEventListener("htmx:responseError", showRequestError);
 document.addEventListener("htmx:sendError", showRequestError);
 document.addEventListener("htmx:timeout", showRequestError);
+
+// htmx swaps no 4xx response by default. The panels answer a validation
+// error with a 422 form, and a role change or a vanished object with a 403 or
+// 404 fragment marked data-htmx-swap-error, and all three have to land in the
+// page. A response of any error status that carries an out-of-band toast is
+// swapped too, so the toast reaches its region. Registered before the
+// listener below, which narrows what happens to a 403 or 404.
+document.addEventListener("htmx:beforeSwap", (event) => {
+    const status = event.detail.xhr.status;
+    const body = event.detail.xhr.responseText || "";
+    if (
+        status === 422 ||
+        ((status === 403 || status === 404) &&
+            body.includes("data-htmx-swap-error"))
+    ) {
+        event.detail.shouldSwap = true;
+        event.detail.isError = false;
+        return;
+    }
+    if (status >= 400 && body.includes(TOAST_MARKER)) {
+        event.detail.shouldSwap = true;
+    }
+});
 
 // An unmarked 403 or 404 on an htmx request is a full page: the user has lost
 // access to what they are looking at, so the page reloads onto the page a

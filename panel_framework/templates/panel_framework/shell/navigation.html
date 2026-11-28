@@ -1,0 +1,17 @@
+{% comment %}
+The navigation <dialog>, driven by the sidePanel controller on an ancestor
+(x-data="sidePanel"): docked in-flow on desktop and a modal sheet below lg.
+The controller finds it by the side-panel-dialog class. What it shows is
+shell/sidebar.html.
+{% endcomment %}
+<dialog x-ref="panelDialog"
+        data-shell-navigation
+        data-variant="bottom-sheet"
+        class="side-panel-dialog modal-backdrop-host border-0 p-0 m-0 bg-transparent text-inherit"
+        aria-label="Navigation">
+    <div class="side-panel-body bg-sidepanel lg:h-full max-lg:in-data-[variant=bottom-sheet]:bottom-sheet overflow-y-auto overscroll-contain">
+        <div class="flex flex-col lg:min-h-full px-4 pb-6 lg:px-6 pt-6">
+            {% include "panel_framework/shell/sidebar.html" %}
+        </div>
+    </div>
+</dialog>

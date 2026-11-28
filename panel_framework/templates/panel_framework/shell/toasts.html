@@ -1,0 +1,13 @@
+{% comment %}
+Where a page says what happened. A response carries a toast as an out-of-band
+fragment that appends to one of the two regions. The list is where a full-page
+response shows Django's messages: the outcome of a request made with scripting
+off (the bulk action that ran, the form that saved).
+{% endcomment %}
+<div id="toast-region-polite" role="status" aria-live="polite"></div>
+<div id="toast-region-assertive" role="alert" aria-live="assertive"></div>
+{% if messages %}
+    <ul role="status" class="list-none m-0 px-4 py-2 text-sm sm:px-6 lg:px-8">
+        {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+    </ul>
+{% endif %}

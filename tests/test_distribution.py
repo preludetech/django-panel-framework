@@ -68,7 +68,10 @@ def test_wheel_holds_every_tracked_package_file(wheel_names: list[str]) -> None:
     assert missing == set()
 
 
-@pytest.mark.parametrize("license_file", ["LICENSE", "HEROICONS_LICENSE.txt"])
+@pytest.mark.parametrize(
+    "license_file",
+    ["LICENSE", "HEROICONS_LICENSE.txt", "HTMX_LICENSE.txt", "ALPINE_LICENSE.txt"],
+)
 def test_wheel_carries_license_file(wheel_names: list[str], license_file: str) -> None:
     assert any(
         ".dist-info/licenses/" in name and name.endswith(license_file)
@@ -76,14 +79,14 @@ def test_wheel_carries_license_file(wheel_names: list[str], license_file: str) -
     )
 
 
-def test_wheel_metadata_declares_mit_license_expression(wheel: Path) -> None:
+def test_wheel_metadata_declares_the_license_expression(wheel: Path) -> None:
     with zipfile.ZipFile(wheel) as archive:
         metadata_name = next(
             n for n in archive.namelist() if n.endswith(".dist-info/METADATA")
         )
         metadata = Parser().parsestr(archive.read(metadata_name).decode())
 
-    assert metadata["License-Expression"] == "MIT"
+    assert metadata["License-Expression"] == "MIT AND 0BSD"
     assert [
         c for c in metadata.get_all("Classifier", []) if c.startswith("License ::")
     ] == []
@@ -93,9 +96,23 @@ def test_wheel_has_no_tests_directory(wheel_names: list[str]) -> None:
     assert [name for name in wheel_names if name.startswith("tests/")] == []
 
 
-@pytest.mark.parametrize("marker", ["node_modules", "reference.css"])
-def test_wheel_leaves_out_dev_only_files(wheel_names: list[str], marker: str) -> None:
-    assert [name for name in wheel_names if marker in name] == []
+def test_wheel_leaves_out_node_modules(wheel_names: list[str]) -> None:
+    assert [name for name in wheel_names if "node_modules" in name] == []
+
+
+@pytest.mark.parametrize(
+    "member",
+    [
+        "panel_framework/static/panel_framework/css/panel_framework.css",
+        "panel_framework/static/panel_framework/vendor/htmx.min.js",
+        "panel_framework/static/panel_framework/vendor/alpine-csp.min.js",
+        "panel_framework/templates/panel_framework/shell/base.html",
+    ],
+)
+def test_wheel_holds_what_the_default_shell_serves(
+    wheel_names: list[str], member: str
+) -> None:
+    assert member in wheel_names
 
 
 @pytest.mark.parametrize(

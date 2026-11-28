@@ -1,0 +1,5 @@
+{% comment %}
+What the navigation panel holds. Override this template to put a logo above
+the menu or a user chip below it.
+{% endcomment %}
+{% include "panel_framework/partials/sidebar_nav.html" with menu_groups=menu_groups request=request only %}

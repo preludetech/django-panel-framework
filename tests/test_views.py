@@ -39,6 +39,7 @@ from tests.helpers import make_site, make_staff_user, make_stub
 from tests.stub_models import StubModel
 from tests.stub_panels import (
     MENULESS_CONFIG,
+    STUB_CONFIG,
     RecordingCapabilityConfig,
     StubBaseConfig,
     StubDataTable,
@@ -57,7 +58,6 @@ pytestmark = pytest.mark.django_db
 
 LIST_REGION_ID = "stubs-table"
 VARY_HEADERS = ("HX-Request", "HX-Target", "HX-History-Restore-Request")
-INTERFACE_TEMPLATE = "panel_framework/minimal_shell.html"
 INTERFACE_URL_NAME = "panel_framework_test:interface"
 
 
@@ -497,7 +497,6 @@ class TestCheckAccessDenyByDefault:
                 config=[NavGroup("Stubs", [DenyByDefaultConfig])],
                 request=request,
                 path_string=f"deny-stub/{stub.pk}",
-                template_name=INTERFACE_TEMPLATE,
                 url_name=INTERFACE_URL_NAME,
             )
 
@@ -513,7 +512,6 @@ class TestCheckAccessDenyByDefault:
             config=[NavGroup("Stubs", [PermissiveConfig])],
             request=request,
             path_string=f"allow-stub/{stub.pk}",
-            template_name=INTERFACE_TEMPLATE,
             url_name=INTERFACE_URL_NAME,
         )
         assert response.status_code == 200
@@ -566,7 +564,6 @@ class TestOutOfScopeActionRequests:
             config=[NavGroup("Stubs", [DenyByDefaultConfig])],
             request=request,
             path_string=path_string,
-            template_name=INTERFACE_TEMPLATE,
             url_name=INTERFACE_URL_NAME,
         )
 
@@ -612,7 +609,6 @@ class TestActionsThatAreNotOffered:
             config=[NavGroup("Stubs", [VanishingConfig])],
             request=request,
             path_string=path_string,
-            template_name=INTERFACE_TEMPLATE,
             url_name=INTERFACE_URL_NAME,
         )
         assert isinstance(response, HttpResponse)
@@ -1437,7 +1433,7 @@ def test_the_run_status_view_answers_404_for_a_run_of_another_site(
 
 
 # ---------------------------------------------------------------------------
-# The minimal shell
+# The default shell
 # ---------------------------------------------------------------------------
 
 
@@ -1451,7 +1447,7 @@ def shell_page(mock_site_context: Site) -> lxml.html.HtmlElement:
 def test_the_shell_holds_the_navigation_and_the_main_region(
     shell_page: lxml.html.HtmlElement,
 ) -> None:
-    assert len(shell_page.cssselect("#interface-main #main-content")) == 1
+    assert len(shell_page.cssselect("main#interface-main #main-content")) == 1
     assert len(shell_page.cssselect("dialog[data-shell-navigation] #sidebar-nav")) == 1
 
 
@@ -1478,8 +1474,60 @@ def test_the_framework_scripts_load_before_the_alpine_csp_build(
     mock_site_context: Site,
 ) -> None:
     html = fetch("stubs").content.decode()
+    htmx = html.index("panel_framework/vendor/htmx.min.js")
     shell = html.index("panel_framework/js/shell-components.js")
     components = html.index("panel_framework/js/alpine-components.js")
-    alpine = html.index("@alpinejs/csp")
+    alpine = html.index("panel_framework/vendor/alpine-csp.min.js")
 
-    assert shell < components < alpine
+    assert htmx < shell < components < alpine
+
+
+@pytest.mark.django_db
+def test_the_default_shell_loads_nothing_from_another_host(
+    shell_page: lxml.html.HtmlElement,
+) -> None:
+    sources = [el.get("src") for el in shell_page.cssselect("script[src]")]
+    sources += [el.get("href") for el in shell_page.cssselect("link[href]")]
+
+    assert sources
+    assert [source for source in sources if "//" in source] == []
+
+
+@pytest.mark.django_db
+def test_the_default_shell_links_the_compiled_stylesheet(
+    shell_page: lxml.html.HtmlElement,
+) -> None:
+    (link,) = shell_page.cssselect('link[rel="stylesheet"]')
+
+    assert link.get("href") == "/static/panel_framework/css/panel_framework.css"
+
+
+@pytest.mark.django_db
+def test_a_host_template_replaces_the_default_shell(mock_site_context: Site) -> None:
+    response = panel_framework_view(
+        config=STUB_CONFIG,
+        request=make_request("stubs"),
+        path_string="stubs",
+        template_name="panel_framework/test_custom_shell.html",
+        url_name=INTERFACE_URL_NAME,
+    )
+    page = lxml.html.fromstring(response.content.decode())
+
+    assert len(page.cssselect('meta[name="test-custom-shell"]')) == 1
+    assert len(page.cssselect("#interface-main #main-content")) == 1
+
+
+@pytest.mark.django_db
+def test_the_old_minimal_shell_name_still_renders_the_shell(
+    mock_site_context: Site,
+) -> None:
+    response = panel_framework_view(
+        config=STUB_CONFIG,
+        request=make_request("stubs"),
+        path_string="stubs",
+        template_name="panel_framework/minimal_shell.html",
+        url_name=INTERFACE_URL_NAME,
+    )
+    page = lxml.html.fromstring(response.content.decode())
+
+    assert len(page.cssselect("#interface-main #main-content")) == 1

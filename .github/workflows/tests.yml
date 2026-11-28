@@ -20,6 +20,11 @@ jobs:
       - run: uv run ruff check
       - run: uv run ruff format --check
       - run: uv run django-admin makemigrations --check --skip-checks --pythonpath . --settings=tests.standalone_settings
+      - run: npm ci
+      - name: Check the committed stylesheet is what the sources build
+        run: |
+          npm run panel_framework_css
+          git diff --exit-code -- panel_framework/static/panel_framework/css/panel_framework.css
       - name: Build the package
         run: uv build --out-dir "$RUNNER_TEMP/dist"
       - name: Run the distribution tests against the built wheel
@@ -28,8 +33,6 @@ jobs:
           PANEL_FRAMEWORK_WHEEL="$wheel" uv run pytest tests/test_distribution.py
       - name: Install the built wheel into a clean environment
         run: tests/clean_install_check.sh "$(ls "$RUNNER_TEMP"/dist/*.whl)"
-      - run: npm ci
-      - run: npm run panel_framework_css
       - run: uv run playwright install --with-deps chromium
       - run: uv run pytest
       - name: Check the release tag

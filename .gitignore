@@ -8,4 +8,3 @@ test-results/
 htmlcov/
 .pytest_cache/
 .ruff_cache/
-panel_framework/static/panel_framework/css/reference.css

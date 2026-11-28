@@ -1,0 +1,12 @@
+/* The input of the build that makes the stylesheet the default shell links
+ * (`static/panel_framework/css/panel_framework.css`): the default theme, the
+ * framework stylesheet and the shell's layout rules, compiled with nothing
+ * from any host. Rebuild with `npm run panel_framework_css` and commit the
+ * output. */
+@import "tailwindcss" source(none);
+
+@import "./default_theme.css";
+@import "./panel_framework.css";
+@import "./shell.css";
+
+@source "../templates";

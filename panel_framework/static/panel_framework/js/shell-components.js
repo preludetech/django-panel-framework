@@ -2,7 +2,8 @@
  * Alpine.js CSP-compatible shell components, loaded on every page.
  *
  * The @alpinejs/csp build does not support inline JS expressions.
- * Load this script BEFORE the Alpine CSP script. It is a classic script so
+ * Load this script BEFORE alpine-components.js and the Alpine CSP script
+ * (`panel_framework/shell/scripts.html` does). It is a classic script so
  * visibilityPoller is a global the other component files call.
  */
 
@@ -38,7 +39,7 @@ function visibilityPoller(seconds, target) {
 }
 
 document.addEventListener("alpine:init", () => {
-    // Unified side panel (base/_base_interface.html).
+    // Unified side panel (shell/navigation.html).
     //
     // One <dialog> drives every sidebar in the app (learner course TOC,
     // educator nav, panel_framework nav). The presentation differs per consumer

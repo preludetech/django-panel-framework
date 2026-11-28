@@ -141,7 +141,7 @@ def check_icon_names(
     """Report each icon name the framework draws that c-panel-icon cannot."""
     messages: list[CheckMessage] = []
     for name in sorted(REQUIRED_ICON_NAMES):
-        hint = f"Make c-panel-icon draw '{name}'. See HOST_CONTRACT.md#icons."
+        hint = f"Make c-panel-icon draw '{name}'. See CUSTOMISING.md#icons."
         try:
             rendered = _render_icon(name)
         except (

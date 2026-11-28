@@ -1,9 +1,10 @@
-/* Reference theme: the closed list of colour roles the panel framework's
- * templates and stylesheets use, with neutral working values. A host defines
- * every role below in its own theme, under the same `--color-<role>` names, so
- * Tailwind generates the `bg-<role>`, `text-<role>` and `border-<role>`
- * utilities the framework's templates carry. `on-*` is the foreground to use on
- * top of the matching background role. */
+/* Default theme: the closed list of colour roles the panel framework's
+ * templates and stylesheets use, with neutral working values. The compiled
+ * stylesheet declares each one as a CSS variable on `:root`, so a host changes
+ * a colour by setting `--color-<role>` in its own stylesheet. A host with its
+ * own Tailwind build defines every role in its theme instead, under the same
+ * names. `on-*` is the foreground to use on top of the matching background
+ * role. */
 
 @theme {
     /* Brand */

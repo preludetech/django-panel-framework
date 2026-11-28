@@ -29,7 +29,7 @@ OVERRIDES_DIR = TESTS_DIR / "template_overrides"
 COMPONENTS_DIR = TEMPLATES_DIR / "cotton"
 FRAMEWORK_CSS = FRAMEWORK_ROOT / "css" / "panel_framework.css"
 MODAL_HOST = TEMPLATES_DIR / "panel_framework" / "partials" / "modal_host.html"
-SIDE_PANEL_HOST = FRAMEWORK_ROOT / "css" / "minimal_shell.css"
+SIDE_PANEL_HOST = FRAMEWORK_ROOT / "css" / "shell.css"
 PARTIALS_DIR = TEMPLATES_DIR / "panel_framework" / "partials"
 FRAMEWORK_SCRIPT = (
     FRAMEWORK_ROOT / "static" / "panel_framework" / "js" / "alpine-components.js"
@@ -601,7 +601,7 @@ ALERT_OWNERS = frozenset(
         "cotton/panel-button.html",
         "cotton/panel-stat-tile.html",
         # The toast region of the framework's own shell.
-        "panel_framework/minimal_shell.html",
+        "panel_framework/shell/toasts.html",
     }
 )
 REQUEST_ERROR_PARTIAL = "panel_framework/partials/request_error.html"

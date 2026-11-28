@@ -4,11 +4,16 @@ build-backend = "hatchling.build"
 
 [project]
 name = "django-panel-framework"
-version = "0.1.0"
+version = "0.2.0"
 requires-python = ">=3.13"
 dependencies = ["django>=6.0,<6.1", "django-cotton>=2.1.3"]
-license = "MIT"
-license-files = ["LICENSE", "panel_framework/templates/panel_framework/icons/HEROICONS_LICENSE.txt"]
+license = "MIT AND 0BSD"
+license-files = [
+    "LICENSE",
+    "panel_framework/templates/panel_framework/icons/HEROICONS_LICENSE.txt",
+    "panel_framework/static/panel_framework/vendor/HTMX_LICENSE.txt",
+    "panel_framework/static/panel_framework/vendor/ALPINE_LICENSE.txt",
+]
 
 [dependency-groups]
 dev = [

@@ -1,0 +1,8 @@
+{% comment %}
+The quick view drawer, the one modal <dialog> and the screen-reader announcer.
+They sit outside #interface-main so an overlay survives an htmx swap of
+#main-content, and inside the sidePanel wrapper.
+{% endcomment %}
+{% include "panel_framework/partials/quick_view_host.html" %}
+{% include "panel_framework/partials/modal_host.html" %}
+{% include "panel_framework/partials/announcer_host.html" %}

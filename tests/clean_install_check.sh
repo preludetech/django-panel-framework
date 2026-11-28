@@ -13,3 +13,10 @@ cp -r "$(dirname "$0")" "$work_dir/tests"
 cd "$work_dir"
 venv/bin/python -c "import panel_framework, sys; sys.exit('site-packages' not in panel_framework.__file__)"
 venv/bin/python -m django check --settings=tests.standalone_settings
+# What the default shell links has to be in the wheel, or an installed page
+# renders unstyled and inert.
+for asset in css/panel_framework.css vendor/htmx.min.js vendor/alpine-csp.min.js \
+    js/shell-components.js js/alpine-components.js; do
+    DJANGO_SETTINGS_MODULE=tests.standalone_settings venv/bin/python -m django \
+        findstatic "panel_framework/$asset" >/dev/null
+done

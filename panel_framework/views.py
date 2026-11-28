@@ -1601,11 +1601,16 @@ def build_breadcrumbs(
     return [section_crumb]
 
 
+# The page an interface renders into when the host names none.
+DEFAULT_SHELL_TEMPLATE = "panel_framework/shell/base.html"
+
+
 def panel_framework_view(
     config: list[NavGroup],
     request: HttpRequest,
     path_string: str,
-    template_name: str,
+    template_name: str = DEFAULT_SHELL_TEMPLATE,
+    *,
     url_name: str,
 ) -> HttpResponse | StreamingHttpResponse:
     """Generic dispatch view for panel-framework-based interfaces.

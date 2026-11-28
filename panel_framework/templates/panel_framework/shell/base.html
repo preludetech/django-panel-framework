@@ -1,0 +1,69 @@
+{% comment %}
+The page every panel-framework interface renders into unless the host names its
+own: panel_framework_view's default template. It is a complete document built
+from the pieces beside it, so a host changes it three ways:
+
+- override one piece by path (shell/sidebar.html, shell/styles.html, ...);
+- extend this template and fill a block;
+- write its own page and include the pieces (CUSTOMISING.md lists them).
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <title>
+            {% block head_title %}{% include "panel_framework/partials/document_title.html#document-title" %}{% endblock head_title %}
+        </title>
+        {% block styles %}
+            {% include "panel_framework/shell/styles.html" %}
+        {% endblock styles %}
+        {% block scripts %}
+            {% include "panel_framework/shell/scripts.html" %}
+            {% block alpine_components %}{% endblock alpine_components %}
+            {% include "panel_framework/shell/alpine.html" %}
+        {% endblock scripts %}
+        {% block head_extra %}{% endblock head_extra %}
+    </head>
+
+    <body class="min-h-dvh" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+
+        {% block messages %}
+            {% include "panel_framework/shell/toasts.html" %}
+        {% endblock messages %}
+
+        {% comment %}
+        The sidePanel controller owns the navigation dialog and the toggle in
+        each page header, so it wraps both. The desktop lock keeps the panel
+        open at lg and up, so the panel has no close control of its own.
+        {% endcomment %}
+        <div x-data="sidePanel"
+             class="px-4 sm:px-6 lg:px-8"
+             data-storage-key="panel-framework-sidebar"
+             data-desktop-lock="true">
+            <div class="side-panel-grid grid relative lg:gap-12">
+                {% block navigation %}
+                    {% include "panel_framework/shell/navigation.html" %}
+                {% endblock navigation %}
+
+                <main id="interface-main" class="flex-1 min-w-0">
+                    {% block content_header %}
+                        {% include "panel_framework/partials/breadcrumbs.html" %}
+                        {% include "panel_framework/partials/page_title.html" %}
+                    {% endblock content_header %}
+                    {% block content %}
+                        {% if main_template_name %}
+                            {% include main_template_name with main=main request=request csrf_token=csrf_token only %}
+                        {% endif %}
+                    {% endblock content %}
+                </main>
+            </div>
+
+            {% block overlays %}
+                {% include "panel_framework/shell/overlays.html" %}
+            {% endblock overlays %}
+        </div>
+    </body>
+</html>
